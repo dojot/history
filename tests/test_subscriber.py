@@ -1,9 +1,11 @@
+from dojot.module.config import Config
 import pytest
 import json
 import pymongo
 import unittest
 from unittest.mock import Mock, MagicMock, patch, call
 from history.subscriber.persister import Persister, LoggingInterface, Auth
+from dojot.module import Messenger, Config, Auth
 
 
 class TestPersister:
@@ -193,12 +195,79 @@ class TestLoggingInterface(unittest.TestCase):
         self.assertTrue('invalid_param' in str(context.exception))
 
 
-@patch.object(Auth, 'get_tenants', return_value=None)
-@patch.object(Persister, 'init_mongodb')
+# @patch.object(Auth, 'get_tenants', return_value=None)
 @patch.object(Persister, 'create_indexes_for_notifications')
+@patch.object(Config, 'load_defaults')
 @patch('history.subscriber.persister.Messenger')
-@patch('history.subscriber.persister.falcon.API')
-@patch('history.subscriber.persister.simple_server')
+# @patch.object(Persister, 'init_mongodb')
+# @patch('history.subscriber.persister.falcon.API')
+# @patch('history.subscriber.persister.simple_server')
+def test_handle_notification_false(mock_messenger, mock_config, mock_create_indexes_for_notifications):
+
+    from history.subscriber.persister import handle_choose_service
+    from history import conf
+
+    p = Persister()
+    p.create_indexes_for_notifications('admin')
+
+    mock_config.dojot = {
+        "management": {
+            "user": "dojot-management",
+            "tenant": "dojot-management"
+        },
+        "subjects": {
+            "tenancy": "dojot.tenancy",
+            "devices": "dojot.device-manager.device",
+            "device_data": "device-data"
+        }
+    }
+    conf.dojot_notification_on = False
+    handle_choose_service(mock_config, p, False)
+    # assert mock_init_mongodb.called
+    # assert mock_get_tenants.called
+    assert mock_messenger.called
+    assert mock_create_indexes_for_notifications.called
+
+    # assert mock_simple_server.make_server.called
+    # assert mock_falcon_api.called
+    # assert mock_simple_server.make_server.called
+
+
+@patch.object(Persister, 'create_indexes_for_notifications')
+@patch.object(Config, 'load_defaults')
+@patch('history.subscriber.persister.Messenger')
+def test_handle_notification_true(mock_messenger, mock_config, mock_create_indexes_for_notifications):
+
+    from history.subscriber.persister import handle_choose_service
+    from history import conf
+
+    p = Persister()
+    p.create_indexes_for_notifications('admin')
+
+    mock_config.dojot = {
+        "management": {
+            "user": "dojot-management",
+            "tenant": "dojot-management"
+        },
+        "subjects": {
+            "tenancy": "dojot.tenancy",
+            "devices": "dojot.device-manager.device",
+            "device_data": "device-data"
+        }
+    }
+    conf.dojot_notification_on = True
+    handle_choose_service(mock_config, p, True)
+
+    assert mock_messenger.called
+    assert mock_create_indexes_for_notifications.called
+
+
+@ patch.object(Auth, 'get_tenants', return_value=None)
+@ patch.object(Persister, 'init_mongodb')
+@ patch.object(Persister, 'create_indexes_for_notifications')
+@ patch('history.subscriber.persister.Messenger')
+@ patch('history.subscriber.persister.falcon.API')
+@ patch('history.subscriber.persister.simple_server')
 def test_persister_main(mock_simple_server, mock_falcon_api, mock_messenger, mock_create_indexes_for_notifications,
                         mock_init_mongodb, mock_get_tenants):
     from history.subscriber.persister import main

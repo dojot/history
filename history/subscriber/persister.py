@@ -268,6 +268,35 @@ class LoggingInterface(object):
                 'Logging level must be DEBUG, INFO, WARNING, ERROR or CRITICAL!', 'level')
 
 
+def handle_choose_service(config, persister, check):
+
+    messenger = Messenger("Persister", config)
+    messenger.init()
+
+    messenger.create_channel(config.dojot['subjects']['devices'], "r")
+    messenger.create_channel(config.dojot['subjects']['device_data'], "r")
+
+    if conf.dojot_notification_on != True:
+        LOGGER.info("all services")
+
+        # TODO: add notifications to config on dojot-module-python
+        messenger.create_channel("dojot.notifications", "r")
+        messenger.on(config.dojot['subjects']['devices'],
+                     "message", persister.handle_event_devices)
+        messenger.on(config.dojot['subjects']['device_data'],
+                     "message", persister.handle_event_data)
+    else:
+        # Persister Only Notification
+        LOGGER.info(f"One Notification: {conf.dojot_notification_on}")
+
+        messenger.on(config.dojot['subjects']['tenancy'],
+                     "message", persister.handle_new_tenant)
+        messenger.on("dojot.notifications", "message",
+                     persister.handle_notification)
+
+    LOGGER.debug("... dojot messenger was successfully initialized.")
+
+
 def main():
     """
     Main, inits mongo, messenger, create channels read channels for device
@@ -281,21 +310,8 @@ def main():
     persister.create_indexes_for_notifications(auth.get_tenants())
     LOGGER.debug("... persister was successfully initialized.")
     LOGGER.debug("Initializing dojot messenger...")
-    messenger = Messenger("Persister", config)
-    messenger.init()
-    messenger.create_channel(config.dojot['subjects']['devices'], "r")
-    messenger.create_channel(config.dojot['subjects']['device_data'], "r")
-    # TODO: add notifications to config on dojot-module-python
-    messenger.create_channel("dojot.notifications", "r")
-    messenger.on(config.dojot['subjects']['devices'],
-                 "message", persister.handle_event_devices)
-    messenger.on(config.dojot['subjects']['device_data'],
-                 "message", persister.handle_event_data)
-    messenger.on(config.dojot['subjects']['tenancy'],
-                 "message", persister.handle_new_tenant)
-    messenger.on("dojot.notifications", "message",
-                 persister.handle_notification)
-    LOGGER.debug("... dojot messenger was successfully initialized.")
+
+    handle_choose_service(config, persister, conf.dojot_notification_on)
 
     # Create falcon app
     app = falcon.API()

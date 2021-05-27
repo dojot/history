@@ -26,18 +26,23 @@ kafka_host = "" + kafka_address + ":" + str(kafka_port)
 kafka_group_id = os.environ.get('KAFKA_GROUP_ID', "history")
 
 # Global subject to use when publishing tenancy lifecycle events
-dojot_subject_tenancy = os.environ.get("DOJOT_SUBJECT_TENANCY", "dojot.tenancy")
+dojot_subject_tenancy = os.environ.get(
+    "DOJOT_SUBJECT_TENANCY", "dojot.tenancy")
 
 # Global subject to use when listening to device CRUD events
-dojot_subject_device = os.environ.get('DOJOT_SUBJECT_DEVICES', "dojot.device-manager.device")
+dojot_subject_device = os.environ.get(
+    'DOJOT_SUBJECT_DEVICES', "dojot.device-manager.device")
 
 # Global subject to use when listening to device data events
-dojot_subject_device_data = os.environ.get('DOJOT_SUBJECT_DEVICE_DATA', "device-data")
+dojot_subject_device_data = os.environ.get(
+    'DOJOT_SUBJECT_DEVICE_DATA', "device-data")
 
 # Global service to use when publishing dojot management events
 # such as new tenants
 dojot_service_management = os.environ.get("DOJOT_SERVICE_MANAGEMENT",
                                           "dojot-management")
+
+dojot_notification_on = os.environ.get("DOJOT_NOTIFICATION_ON", True)
 
 #
 # Other dojot services
@@ -48,4 +53,5 @@ data_broker_url = os.environ.get("DATA_BROKER_URL", "http://data-broker")
 # auth related configuration
 auth_url = os.environ.get('AUTH_URL', "http://auth:5000")
 # device-manager URL
-device_manager_url = os.environ.get('DEVICE_MANAGER_URL', "http://device-manager:5000")
+device_manager_url = os.environ.get(
+    'DEVICE_MANAGER_URL', "http://device-manager:5000")

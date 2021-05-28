@@ -71,7 +71,7 @@ HISTORY_DB_ADDRESS          |History database's address                         
 HISTORY_DB_PORT             |History database's port                                       |27017
 HISTORY_DB_REPLICA_SET      |History database's replica set address                        |None
 LOG_LEVEL                   | Sets the log level                                           | "INFO"
-
+DOJOT_PERSIST_NOTIFICATIONS_ONLY                   |Defines a value to change the behavior of the service                                           |False
 ********************************************************************************
 
 ## **How to install History service**
@@ -210,6 +210,7 @@ DOJOT_SUBJECT_DEVICE_DATA   |Global subject to use when receiving data from devi
 KAFKA_ADDRESS               |Kafta address                                                 |"kafka"
 KAFKA_PORT                  |Kafka port                                                    |9092
 KAFKA_GROUP_ID              |Group ID used when creating consumers                         |"history"
+DOJOT_PERSIST_NOTIFICATIONS_ONLY                   |Defines a value to change the behavior of the service                                           |False
 
 ##### MongoDB related configuration
 

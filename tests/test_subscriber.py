@@ -204,7 +204,7 @@ class TestLoggingInterface(unittest.TestCase):
 # @patch('history.subscriber.persister.simple_server')
 def test_handle_notification_false(mock_messenger, mock_config, mock_create_indexes_for_notifications):
 
-    from history.subscriber.persister import handle_choose_service
+    from history.subscriber.persister import start_dojot_messenger
     from history import conf
 
     p = Persister()
@@ -221,16 +221,13 @@ def test_handle_notification_false(mock_messenger, mock_config, mock_create_inde
             "device_data": "device-data"
         }
     }
-    conf.dojot_notification_on = False
-    handle_choose_service(mock_config, p, False)
-    # assert mock_init_mongodb.called
-    # assert mock_get_tenants.called
+    conf.dojot_persist_notifications_only = False
+    start_dojot_messenger(mock_config, p)
+
     assert mock_messenger.called
     assert mock_create_indexes_for_notifications.called
 
-    # assert mock_simple_server.make_server.called
-    # assert mock_falcon_api.called
-    # assert mock_simple_server.make_server.called
+
 
 
 @patch.object(Persister, 'create_indexes_for_notifications')
@@ -238,7 +235,7 @@ def test_handle_notification_false(mock_messenger, mock_config, mock_create_inde
 @patch('history.subscriber.persister.Messenger')
 def test_handle_notification_true(mock_messenger, mock_config, mock_create_indexes_for_notifications):
 
-    from history.subscriber.persister import handle_choose_service
+    from history.subscriber.persister import start_dojot_messenger
     from history import conf
 
     p = Persister()
@@ -255,8 +252,8 @@ def test_handle_notification_true(mock_messenger, mock_config, mock_create_index
             "device_data": "device-data"
         }
     }
-    conf.dojot_notification_on = True
-    handle_choose_service(mock_config, p, True)
+    conf.dojot_persist_notifications_only = True
+    start_dojot_messenger(mock_config, p)
 
     assert mock_messenger.called
     assert mock_create_indexes_for_notifications.called

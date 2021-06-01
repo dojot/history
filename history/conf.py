@@ -42,7 +42,8 @@ dojot_subject_device_data = os.environ.get(
 dojot_service_management = os.environ.get("DOJOT_SERVICE_MANAGEMENT",
                                           "dojot-management")
 
-dojot_persist_notifications_only = os.environ.get("DOJOT_PERSIST_NOTIFICATIONS_ONLY", False)
+dojot_persist_notifications_only = os.environ.get(
+    "DOJOT_PERSIST_NOTIFICATIONS_ONLY", False)
 
 
 #

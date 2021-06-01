@@ -268,24 +268,35 @@ class LoggingInterface(object):
                 'Logging level must be DEBUG, INFO, WARNING, ERROR or CRITICAL!', 'level')
 
 
+def str2_bool(bool):
+    """
+     function that checks the type and value of the environment variable: DOJOT_PERSIST_NOTIFICATION_ONLY;
+     Because docker-compose.yml only 
+     accepts numeric and String values, this type checking prevents future errors 
+    """
+    return bool.lower() in ("yes", "true", "t", "1")
+
+
 def start_dojot_messenger(config, persister):
 
     messenger = Messenger("Persister", config)
     messenger.init()
     # Persister Only Notification
     messenger.create_channel("dojot.notifications", "r")
-    messenger.on(config.dojot['subjects']['tenancy'],"message", persister.handle_new_tenant)
-    messenger.on("dojot.notifications", "message",persister.handle_notification)
-    LOGGER.info('Only notifications are enabled')
+    messenger.on(config.dojot['subjects']['tenancy'],
+                 "message", persister.handle_new_tenant)
+    messenger.on("dojot.notifications", "message",
+                 persister.handle_notification)
 
-    if conf.dojot_persist_notifications_only != True:
+    if str2_bool(conf.dojot_persist_notifications_only) != True:
         LOGGER.info("Persisting device events")
         # TODO: add notifications to config on dojot-module-python
         messenger.create_channel(config.dojot['subjects']['devices'], "r")
         messenger.create_channel(config.dojot['subjects']['device_data'], "r")
-        messenger.on(config.dojot['subjects']['devices'],"message", persister.handle_event_devices)
-        messenger.on(config.dojot['subjects']['device_data'],"message", persister.handle_event_data)
-
+        messenger.on(config.dojot['subjects']['devices'],
+                     "message", persister.handle_event_devices)
+        messenger.on(config.dojot['subjects']['device_data'],
+                     "message", persister.handle_event_data)
 
 
 def main():

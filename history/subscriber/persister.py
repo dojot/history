@@ -278,7 +278,6 @@ def str2_bool(v):
 
 
 def start_dojot_messenger(config, persister):
-
     messenger = Messenger("Persister", config)
     messenger.init()
     # Persister Only Notification

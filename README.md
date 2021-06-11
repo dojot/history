@@ -221,7 +221,6 @@ HISTORY_DB_REPLICA_SET      | History database's replica set address            
 HISTORY_DB_DATA_EXPIRATION  | Time (in seconds) that the data must be kept in the database | "604800" (7 days)
 MONGO_SHARD                 |Activate the use of sharding or not                           | False
 
-
 ********************************************************************************
 
 ## **How to install Persister service**

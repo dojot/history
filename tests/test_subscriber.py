@@ -217,15 +217,12 @@ def test_persist_all_events(mock_messenger, mock_config, mock_create_index):
             "device_data": "device-data"
         }
     }
-    """
-    test persist all boolean valued events
-    """
+    #test persist all boolean valued events
+
     conf.dojot_persist_notifications_only = False
     start_dojot_messenger(mock_config, p)
 
-    """
-    test persist all text valued events
-    """
+    #test persist all text valued events
     conf.dojot_persist_notifications_only = 'False'
     start_dojot_messenger(mock_config, p)
 

@@ -255,15 +255,13 @@ def test_persist_only_notifications(mock_messenger, mock_config, mock_create_ind
             "device_data": "device-data"
         }
     }
-    """
-    test persist only boolean valued notifications
-    """
+
+    #test persist only boolean valued notifications
     conf.dojot_persist_notifications_only = True
     start_dojot_messenger(mock_config, p)
 
-    """
-    test persist only text valued notifications
-    """
+    
+    #test persist only text valued notifications
     conf.dojot_persist_notifications_only = 'True'
     start_dojot_messenger(mock_config, p)
 

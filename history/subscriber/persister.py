@@ -270,9 +270,7 @@ class LoggingInterface(object):
 
 def str2_bool(v):
     """
-     function that checks the type and value of the environment variable: DOJOT_PERSIST_NOTIFICATION_ONLY;
-     Because docker-compose.yml only 
-     accepts numeric and String values, this type checking prevents future errors 
+     this function basically only converts a string to boolean
     """
     if type(v) is bool:
         return v
@@ -289,8 +287,10 @@ def start_dojot_messenger(config, persister):
                  "message", persister.handle_new_tenant)
     messenger.on("dojot.notifications", "message",
                  persister.handle_notification)
+    LOGGER.info('Listen to notification events')
 
     if str2_bool(conf.dojot_persist_notifications_only) != True:
+        LOGGER.info("Listen to devices events")
         # TODO: add notifications to config on dojot-module-python
         messenger.create_channel(config.dojot['subjects']['devices'], "r")
         messenger.create_channel(config.dojot['subjects']['device_data'], "r")

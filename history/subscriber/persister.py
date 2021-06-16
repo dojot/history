@@ -270,7 +270,8 @@ class LoggingInterface(object):
 
 def str2_bool(v):
     """
-     this function basically only converts a string to boolean
+     If the value is Boolean, it just returns the value. In case the received value is not boolean, 
+     it is verified if the received value is a true value, being these possible values "yes", "true", "t", "1" ignoring case sensitive.
     """
     if type(v) is bool:
         return v
@@ -278,6 +279,7 @@ def str2_bool(v):
 
 
 def start_dojot_messenger(config, persister):
+
     messenger = Messenger("Persister", config)
     messenger.init()
     # Persister Only Notification
@@ -286,10 +288,10 @@ def start_dojot_messenger(config, persister):
                  "message", persister.handle_new_tenant)
     messenger.on("dojot.notifications", "message",
                  persister.handle_notification)
-    LOGGER.info('Listen to notification events')
+    LOGGER.info('Listen to notification events ')
 
     if str2_bool(conf.dojot_persist_notifications_only) != True:
-        LOGGER.info("Listen to devices events")
+        LOGGER.info("Listen to devices events ")
         # TODO: add notifications to config on dojot-module-python
         messenger.create_channel(config.dojot['subjects']['devices'], "r")
         messenger.create_channel(config.dojot['subjects']['device_data'], "r")

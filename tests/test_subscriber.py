@@ -195,10 +195,12 @@ class TestLoggingInterface(unittest.TestCase):
         self.assertTrue('invalid_param' in str(context.exception))
 
 
-@patch.object(Persister, 'create_indexes_for_notifications')
+@patch.object(Persister, 'create_indexes')
 @patch.object(Config, 'load_defaults')
 @patch('history.subscriber.persister.Messenger')
-def test_persist_all_events(mock_messenger, mock_config, mock_create_index):
+@patch.object(Messenger, 'create_channel', return_value=None)
+@patch.object(Messenger, 'on', return_value=None)
+def test_persist_all_events(mock_on, mock_create_channel, mock_messenger, mock_config, mock_create_indexes):
 
     from history.subscriber.persister import start_dojot_messenger
     from history import conf
@@ -217,27 +219,67 @@ def test_persist_all_events(mock_messenger, mock_config, mock_create_index):
             "device_data": "device-data"
         }
     }
-    #test persist all boolean valued events
 
+    # test persist all boolean valued events
     conf.dojot_persist_notifications_only = False
     start_dojot_messenger(mock_config, p)
 
-    #test persist all text valued events
-    conf.dojot_persist_notifications_only = 'False'
-    start_dojot_messenger(mock_config, p)
+    mock_create_notifications = mock_create_channel("dojot.notifications", "r")
 
+    mock_create_all_services_devices = mock_create_channel(
+        mock_config.dojot['subjects']['devices'], "r")
+
+    mock_create_all_services_device_data = mock_create_channel(
+        mock_config.dojot['subjects']['device_data'], "r")
+
+    mock_on_handle_new_tenent = mock_on(mock_config.dojot['subjects']['tenancy'],
+                                        "message", p.handle_new_tenant)
+    mock_on_handle_notification = mock_on(
+        "dojot.notifications", "message", p.handle_notification)
+
+    mock_on_handle_event_devices = mock_on(mock_config.dojot['subjects']['devices'],
+                                           "message", p.handle_event_devices)
+
+    mock_on_handle_event_data = mock_on(mock_config.dojot['subjects']['device_data'],
+                                        "message", p.handle_event_data)
+
+    assert mock_create_indexes.called
     assert mock_messenger.called
-    assert mock_create_index.called
+
+    assert mock_create_notifications == mock_create_channel.assert_any_call(
+        "dojot.notifications", "r")
+
+    assert mock_create_all_services_devices == mock_create_channel.assert_any_call(
+        mock_config.dojot['subjects']['devices'], "r")
+
+    assert mock_create_all_services_device_data == mock_create_channel.assert_any_call(
+        mock_config.dojot['subjects']['device_data'], "r")
+
+    assert mock_on_handle_new_tenent == mock_on.assert_any_call(mock_config.dojot['subjects']['tenancy'],
+                                                                "message", p.handle_new_tenant)
+    assert mock_on_handle_notification == mock_on.assert_any_call(
+        "dojot.notifications", "message", p.handle_notification)
+
+    assert mock_on_handle_event_devices == mock_on.assert_any_call(mock_config.dojot['subjects']['devices'],
+                                                                   "message", p.handle_event_devices)
+
+    assert mock_on_handle_event_data == mock_on.assert_any_call(mock_config.dojot['subjects']['device_data'],
+                                                                "message", p.handle_event_data)
+
+    assert mock_create_channel.call_count == 3
+
+    assert mock_on.call_count == 4
 
 
-@patch.object(Persister, 'create_indexes_for_notifications')
+@patch.object(Persister, 'create_indexes')
 @patch.object(Config, 'load_defaults')
 @patch('history.subscriber.persister.Messenger')
-def test_persist_only_notifications(mock_messenger, mock_config, mock_create_indexes_for_notifications):
+@patch.object(Messenger, 'create_channel', return_value=None)
+@patch.object(Messenger, 'on', return_value=None)
+def test_persist_only_notifications(mock_create_channel, mock_on, mock_messenger, mock_config, create_indexes):
 
     from history.subscriber.persister import start_dojot_messenger
     from history import conf
-
     p = Persister()
     p.create_indexes_for_notifications('admin')
 
@@ -252,26 +294,54 @@ def test_persist_only_notifications(mock_messenger, mock_config, mock_create_ind
             "device_data": "device-data"
         }
     }
-
-    #test persist only boolean valued notifications
+    # test persist only boolean valued notifications
     conf.dojot_persist_notifications_only = True
     start_dojot_messenger(mock_config, p)
+    mock_test_create_channel = mock_create_channel("dojot.notifications", "r")
 
-    
-    #test persist only text valued notifications
-    conf.dojot_persist_notifications_only = 'True'
-    start_dojot_messenger(mock_config, p)
+    mock_on_handle_new_tenent = mock_on(mock_config.dojot['subjects']['tenancy'],
+                                        "message", p.handle_new_tenant)
 
+    mock_on_handle_notification = mock_on(
+        "dojot.notifications", "message", p.handle_notification)
+
+    assert create_indexes.called
     assert mock_messenger.called
-    assert mock_create_indexes_for_notifications.called
+    assert mock_test_create_channel == mock_create_channel.assert_called_with(
+        "dojot.notifications", "r")
+    assert mock_on_handle_new_tenent == mock_on.assert_any_call(mock_config.dojot['subjects']['tenancy'],
+                                                                "message", p.handle_new_tenant)
+
+    assert mock_on_handle_notification == mock_on.assert_any_call(
+        "dojot.notifications", "message", p.handle_notification)
+
+    assert mock_on.call_count == 2
 
 
-@ patch.object(Auth, 'get_tenants', return_value=None)
-@ patch.object(Persister, 'init_mongodb')
-@ patch.object(Persister, 'create_indexes_for_notifications')
-@ patch('history.subscriber.persister.start_dojot_messenger')
-@ patch('history.subscriber.persister.falcon.API')
-@ patch('history.subscriber.persister.simple_server')
+def test_str2_bool_return_true():
+    from history.subscriber.persister import str2_bool
+
+    mock_return = str2_bool('true')
+    mock_value_expected = True
+
+    assert (mock_value_expected == mock_return)
+
+
+def test_str2_bool_return_false():
+    from history.subscriber.persister import str2_bool
+
+    mock_return = str2_bool('false')
+    mock_value_expected = False
+
+    assert (mock_value_expected == mock_return)
+
+
+@patch.object(Auth, 'get_tenants', return_value=None)
+@patch.object(Persister, 'init_mongodb')
+@patch.object(Persister, 'create_indexes_for_notifications')
+@patch('history.subscriber.persister.start_dojot_messenger')
+@patch('history.subscriber.persister.falcon.API')
+@patch('history.subscriber.persister.simple_server')
 def test_persister_main(mock_simple_server, mock_falcon_api, mock_start_dojot_messenger, mock_create_indexes_for_notifications,
                         mock_init_mongodb, mock_get_tenants):
     from history.subscriber.persister import main

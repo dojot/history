@@ -221,8 +221,7 @@ def test_persist_all_events(mock_on, mock_create_channel, mock_messenger, mock_c
     }
 
     # test persist all boolean valued events
-    conf.dojot_persist_notifications_only = False
-    start_dojot_messenger(mock_config, p)
+    start_dojot_messenger(mock_config, p, False)
 
     mock_create_notifications = mock_create_channel("dojot.notifications", "r")
 
@@ -295,8 +294,7 @@ def test_persist_only_notifications(mock_create_channel, mock_on, mock_messenger
         }
     }
     # test persist only boolean valued notifications
-    conf.dojot_persist_notifications_only = True
-    start_dojot_messenger(mock_config, p)
+    start_dojot_messenger(mock_config, p, True)
     mock_test_create_channel = mock_create_channel("dojot.notifications", "r")
 
     mock_on_handle_new_tenent = mock_on(mock_config.dojot['subjects']['tenancy'],
@@ -307,8 +305,11 @@ def test_persist_only_notifications(mock_create_channel, mock_on, mock_messenger
 
     assert create_indexes.called
     assert mock_messenger.called
-    assert mock_test_create_channel == mock_create_channel.assert_called_with(
+    assert mock_test_create_channel == mock_create_channel.assert_called_once_with(
         "dojot.notifications", "r")
+
+    assert mock_create_channel.call_count == 1
+
     assert mock_on_handle_new_tenent == mock_on.assert_any_call(mock_config.dojot['subjects']['tenancy'],
                                                                 "message", p.handle_new_tenant)
 

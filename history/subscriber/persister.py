@@ -278,7 +278,7 @@ def str2_bool(v):
     return v.lower() in ("yes", "true", "t", "1")
 
 
-def start_dojot_messenger(config, persister):
+def start_dojot_messenger(config, persister, dojot_persist_notifications_only):
 
     messenger = Messenger("Persister", config)
     messenger.init()
@@ -288,10 +288,10 @@ def start_dojot_messenger(config, persister):
                  "message", persister.handle_new_tenant)
     messenger.on("dojot.notifications", "message",
                  persister.handle_notification)
-    LOGGER.info('Listen to notification events ')
+    LOGGER.info('Listen to notification events')
 
-    if str2_bool(conf.dojot_persist_notifications_only) != True:
-        LOGGER.info("Listen to devices events ")
+    if str2_bool(dojot_persist_notifications_only) != True:
+        LOGGER.info("Listen to devices events")
         # TODO: add notifications to config on dojot-module-python
         messenger.create_channel(config.dojot['subjects']['devices'], "r")
         messenger.create_channel(config.dojot['subjects']['device_data'], "r")
@@ -315,7 +315,8 @@ def main():
     LOGGER.debug("... persister was successfully initialized.")
     LOGGER.debug("Initializing dojot messenger...")
 
-    start_dojot_messenger(config, persister)
+    start_dojot_messenger(
+        config, persister, conf.dojot_persist_notifications_only)
     LOGGER.debug("... dojot messenger was successfully initialized.")
 
     # Create falcon app

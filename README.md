@@ -197,6 +197,7 @@ DATA_BROKER_URL             |Data Broker address                                
 DEVICE_MANAGER_URL          |Device Manager address                                        |"http://device-manager:5000"
 LOG_LEVEL                   |Define minimum logging level                                  |"INFO"
 PERSISTER_PORT              |Port to be used by persister sevice's endpoints               |8057
+DOJOT_PERSIST_NOTIFICATIONS_ONLY                   |If 'True' only the notification events are persisted, otherwise if 'False' the notification and device events are persisted.                                         |False
 
 ##### Kafka related configuration
 
@@ -209,7 +210,7 @@ DOJOT_SUBJECT_DEVICE_DATA   |Global subject to use when receiving data from devi
 KAFKA_ADDRESS               |Kafta address                                                 |"kafka"
 KAFKA_PORT                  |Kafka port                                                    |9092
 KAFKA_GROUP_ID              |Group ID used when creating consumers                         |"history"
-DOJOT_PERSIST_NOTIFICATIONS_ONLY                   |If 'True' only the notification events are persisted, otherwise if 'False' the notification and device events are persisted.                                         |False
+
 
 ##### MongoDB related configuration
 

@@ -222,60 +222,35 @@ def test_persist_all_events(mock_on, mock_create_channel, mock_messenger, mock_c
 
     # test persist all boolean valued events
     start_dojot_messenger(mock_config, p, False)
+    mock_messenger.assert_called_once_with("Persister", mock_config)
 
-    mock_create_notifications = mock_create_channel("dojot.notifications", "r")
+    mock_messenger().create_channel.assert_any_call("dojot.notifications", "r")
 
-    mock_create_all_services_devices = mock_create_channel(
-        mock_config.dojot['subjects']['devices'], "r")
-
-    mock_create_all_services_device_data = mock_create_channel(
-        mock_config.dojot['subjects']['device_data'], "r")
-
-    mock_on_handle_new_tenent = mock_on(mock_config.dojot['subjects']['tenancy'],
+    mock_messenger().on.assert_any_call(mock_config.dojot['subjects']['tenancy'],
                                         "message", p.handle_new_tenant)
-    mock_on_handle_notification = mock_on(
-        "dojot.notifications", "message", p.handle_notification)
 
-    mock_on_handle_event_devices = mock_on(mock_config.dojot['subjects']['devices'],
-                                           "message", p.handle_event_devices)
+    mock_messenger().on.assert_any_call("dojot.notifications", "message",
+                                        p.handle_notification)
 
-    mock_on_handle_event_data = mock_on(mock_config.dojot['subjects']['device_data'],
-                                        "message", p.handle_event_data)
-
-    assert mock_create_indexes.called
-    assert mock_messenger.called
-
-    assert mock_create_notifications == mock_create_channel.assert_any_call(
-        "dojot.notifications", "r")
-
-    assert mock_create_all_services_devices == mock_create_channel.assert_any_call(
+    mock_messenger().create_channel.assert_any_call(
         mock_config.dojot['subjects']['devices'], "r")
 
-    assert mock_create_all_services_device_data == mock_create_channel.assert_any_call(
+    mock_messenger().create_channel.assert_any_call(
         mock_config.dojot['subjects']['device_data'], "r")
 
-    assert mock_on_handle_new_tenent == mock_on.assert_any_call(mock_config.dojot['subjects']['tenancy'],
-                                                                "message", p.handle_new_tenant)
-    assert mock_on_handle_notification == mock_on.assert_any_call(
-        "dojot.notifications", "message", p.handle_notification)
+    mock_messenger().on.assert_any_call(mock_config.dojot['subjects']['devices'],
+                                        "message", p.handle_event_devices)
 
-    assert mock_on_handle_event_devices == mock_on.assert_any_call(mock_config.dojot['subjects']['devices'],
-                                                                   "message", p.handle_event_devices)
-
-    assert mock_on_handle_event_data == mock_on.assert_any_call(mock_config.dojot['subjects']['device_data'],
-                                                                "message", p.handle_event_data)
-
-    assert mock_create_channel.call_count == 3
-
-    assert mock_on.call_count == 4
+    mock_messenger().on.assert_any_call(mock_config.dojot['subjects']['device_data'],
+                                        "message", p.handle_event_data)
 
 
 @patch.object(Persister, 'create_indexes')
 @patch.object(Config, 'load_defaults')
 @patch('history.subscriber.persister.Messenger')
-@patch.object(Messenger, 'create_channel', return_value=None)
-@patch.object(Messenger, 'on', return_value=None)
-def test_persist_only_notifications(mock_create_channel, mock_on, mock_messenger, mock_config, create_indexes):
+@patch.object(Messenger, 'create_channel')
+@patch.object(Messenger, 'on')
+def test_persist_only_notifications(mock_on, mock_create_channel, mock_messenger, mock_config, create_indexes):
 
     from history.subscriber.persister import start_dojot_messenger
     from history import conf
@@ -295,46 +270,31 @@ def test_persist_only_notifications(mock_create_channel, mock_on, mock_messenger
     }
     # test persist only boolean valued notifications
     start_dojot_messenger(mock_config, p, True)
-    mock_test_create_channel = mock_create_channel("dojot.notifications", "r")
+    mock_messenger.assert_called_once_with("Persister", mock_config)
 
-    mock_on_handle_new_tenent = mock_on(mock_config.dojot['subjects']['tenancy'],
+    mock_messenger().create_channel.assert_any_call("dojot.notifications", "r")
+    mock_messenger().on.assert_any_call(mock_config.dojot['subjects']['tenancy'],
                                         "message", p.handle_new_tenant)
 
-    mock_on_handle_notification = mock_on(
-        "dojot.notifications", "message", p.handle_notification)
-
-    assert create_indexes.called
-    assert mock_messenger.called
-    assert mock_test_create_channel == mock_create_channel.assert_called_once_with(
-        "dojot.notifications", "r")
-
-    assert mock_create_channel.call_count == 1
-
-    assert mock_on_handle_new_tenent == mock_on.assert_any_call(mock_config.dojot['subjects']['tenancy'],
-                                                                "message", p.handle_new_tenant)
-
-    assert mock_on_handle_notification == mock_on.assert_any_call(
-        "dojot.notifications", "message", p.handle_notification)
-
-    assert mock_on.call_count == 2
+    mock_messenger().on.assert_any_call("dojot.notifications", "message",
+                                        p.handle_notification)
 
 
 def test_str2_bool_return_true():
     from history.subscriber.persister import str2_bool
-
-    mock_return = str2_bool('true')
-    mock_value_expected = True
-
-    assert (mock_value_expected == mock_return)
+    assert True == str2_bool('true')
+    assert True == str2_bool('yes')
+    assert True == str2_bool('t')
+    assert True == str2_bool('1')
 
 
 def test_str2_bool_return_false():
     from history.subscriber.persister import str2_bool
 
-    mock_return = str2_bool('false')
-    mock_value_expected = False
-
-    assert (mock_value_expected == mock_return)
+    assert False == str2_bool('false')
+    assert False == str2_bool('no')
+    assert False == str2_bool('f')
+    assert False == str2_bool('0')
 
 
 @patch.object(Auth, 'get_tenants', return_value=None)

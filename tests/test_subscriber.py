@@ -282,19 +282,19 @@ def test_persist_only_notifications(mock_on, mock_create_channel, mock_messenger
 
 def test_str2_bool_return_true():
     from history.subscriber.persister import str2_bool
-    assert True == str2_bool('true')
-    assert True == str2_bool('yes')
-    assert True == str2_bool('t')
-    assert True == str2_bool('1')
+    assert True is str2_bool('true')
+    assert True is str2_bool('yes')
+    assert True is str2_bool('t')
+    assert True is str2_bool('1')
 
 
 def test_str2_bool_return_false():
     from history.subscriber.persister import str2_bool
 
-    assert False == str2_bool('false')
-    assert False == str2_bool('no')
-    assert False == str2_bool('f')
-    assert False == str2_bool('0')
+    assert False is str2_bool('false')
+    assert False is str2_bool('no')
+    assert False is str2_bool('f')
+    assert False is str2_bool('0')
 
 
 @patch.object(Auth, 'get_tenants', return_value=None)

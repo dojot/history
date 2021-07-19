@@ -29,9 +29,9 @@ class TestNotificationHistory:
     def test_get_query(self):
         with patch.object(HistoryUtil,'model_value') as mock_model_value:
             mock_model_value.return_value = 'bar'
-            filter_query = {"key":"foo"}
+            filter_query = {"key":"foo", "dateFrom": "2021-07-13T21:31:04.912000Z", "dateTo": "2021-07-13T21:31:45.560000Z", "limit": 25}
             returned_query = NotificationHistory.get_query(filter_query)
-            expected_query = {'query': {'metaAttrsFilter.key': 'bar'}, 'limit_val': 10, 'sort': [('ts', -1)], 'filter': {'_id': False, '@timestamp': False, '@version': False}}
+            expected_query = {'query': {'metaAttrsFilter.key': 'bar', 'ts': {'$gte': datetime.datetime(2021, 7, 13, 21, 31, 4, 912000, tzinfo=tzlocal()), '$lte': datetime.datetime(2021, 7, 13, 21, 31, 45, 560000, tzinfo=tzlocal())}}, 'limit_val': 25, 'sort': [('ts', -1)], 'filter': {'_id': False, '@timestamp': False, '@version': False}}
             assert returned_query == expected_query
     
     @patch('pymongo.collection.Collection.find')

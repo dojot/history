@@ -277,7 +277,7 @@ class NotificationHistory(object):
                     
                     value = HistoryUtil.model_value(value, HistoryUtil.check_type(value))
                     query[field] = value
-            if len(ts_filter.keys()) > 0:
+            if ts_filter.keys():
                 query['ts'] = ts_filter
 
         sort = [('ts', pymongo.DESCENDING)]

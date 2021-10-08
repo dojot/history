@@ -115,7 +115,7 @@ class DeviceHistory(object):
     """Service used to retrieve a given device historical data"""
 
     @staticmethod
-    def parse_request(request, attr, filterField, filterValue):
+    def parse_request(request, attr, filterField=None, filterValue=None):
         """ returns mongo compatible query object, based on the query params provided """
         logger.debug('DeviceHistory.parse_request [start]')
 
@@ -142,12 +142,12 @@ class DeviceHistory(object):
                 logger.error(e)
                 raise falcon.HTTPInvalidParam('Must be integer.', 'hLimit')
 
+
         if attr:
             if filterField:
                 query = {'attr': attr, filterField: {'$eq': filterValue}}
             else:
                 query = {'attr': attr, 'value': {'$ne': ' '}}
-
         else:
             query = {'attr': attr, 'value': {'$ne': ' '}}
 
@@ -229,10 +229,12 @@ class DeviceHistory(object):
                 logger.info('got list of attrs')
                 history = {}
                 for attr in req.params['attr']:
+                    logger.info(attr)
                     query = DeviceHistory.parse_request(
                         req, attr)
                     history[attr] = DeviceHistory.get_single_attr(
                         collection, query)
+                        
             else:
                 logger.info('got single attr')
                 if 'attrFilter' in req.params.keys():

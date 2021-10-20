@@ -2,6 +2,7 @@ from dojot.module.config import Config
 import pytest
 import json
 import pymongo
+from pymongo.errors import OperationFailure
 import unittest
 from unittest.mock import Mock, MagicMock, patch, call
 from history.subscriber.persister import Persister, LoggingInterface, Auth
@@ -167,6 +168,42 @@ class TestPersister:
         mock_create_index.assert_called_once()
         assert mock_command.call_count == 2
 
+    # Testing update ttl index
+
+    @pytest.fixture
+    def persister(self):
+        return Persister()
+
+    @patch.object(Persister, '_check_update')
+    def test_init_mongo_call_check_update(self, mock_check_update, persister):
+        persister.init_mongodb()
+        assert mock_check_update.called
+
+    @patch.object(Persister, '_find_ttl_db_value')
+    def test_check_update_call_find_ttl_db_value(self, mock__find_ttl_db_value, persister):
+        persister.init_mongodb()
+        persister._check_update()
+        assert mock__find_ttl_db_value.called
+
+    def test_find_ttl_db_value_return_zero_if_collection_name_not_exists_in_db(self, persister):
+        persister.init_mongodb()
+        res = persister._find_ttl_db_value("Collection Name Invalid")
+        assert res == 0
+
+    def test_find_ttl_db_value_return_zero_if_collection_name_is_empty(self, persister):
+        persister.init_mongodb()
+        res = persister._find_ttl_db_value("")
+        assert res == 0
+
+    def test_exec_update_ttl_raises_if_empty_list(self, persister):
+        with pytest.raises(IndexError):
+            persister.init_mongodb()
+            persister._exec_update_ttl([])
+
+    def test_exec_update_ttl_raises_if_invalid_list(self, persister):
+        with pytest.raises(OperationFailure):
+            persister.init_mongodb()
+            persister._exec_update_ttl(["", "collection_test", [], {}])
 
 class TestLoggingInterface(unittest.TestCase):
 

@@ -38,6 +38,7 @@ class Persister:
             LOGGER.info("db initialized")
         except Exception as error:
             LOGGER.warn("Could not init mongo db client: %s" % error)
+            raise error
 
     def create_indexes(self, collection_name):
         """
@@ -267,7 +268,6 @@ class Persister:
             :return: returns database ttl value
         """
         index_name = 'ts_1'
-        ttl_value = 0
         ttl_key = 'expireAfterSeconds'
         if not collection_name:
             LOGGER.debug(f"Could not find the ttl value. (collection_name is empty)")
@@ -276,9 +276,7 @@ class Persister:
             index_info = self.db[collection_name].index_information()[index_name].items()
             for key, value in index_info:
                 if key == ttl_key:
-                    ttl_value = value
-                    return ttl_value
-            return ttl_value
+                    return value
         except Exception:
             LOGGER.debug(f"Unable to retrieve index information for given collection name.")
             raise Exception

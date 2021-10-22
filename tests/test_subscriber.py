@@ -2,7 +2,6 @@ from dojot.module.config import Config
 import pytest
 import json
 import pymongo
-from pymongo.errors import OperationFailure
 import unittest
 from unittest.mock import Mock, MagicMock, patch, call
 from history.subscriber.persister import Persister, LoggingInterface, Auth
@@ -195,7 +194,7 @@ class TestPersister:
             p._exec_update_ttl([])
 
     def test_exec_update_ttl_raises_if_invalid_list(self):
-        with pytest.raises(OperationFailure):
+        with pytest.raises(Exception):
             p = Persister()
             p.init_mongodb()
             p._exec_update_ttl(["", "collection_test", [], {}])

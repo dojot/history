@@ -165,7 +165,7 @@ class TestPersister:
         p.init_mongodb()
         p.enable_collection_sharding('admin_notifications')
         mock_create_index.assert_called_once()
-        assert mock_command.call_count == 2
+        assert mock_command.call_count == 3
 
     # Testing update ttl index
 

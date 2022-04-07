@@ -54,7 +54,7 @@ class TestDeviceHistory:
         history_concatenated = DeviceHistory.csv_response_parser(mock_history)
         
         assert except_history == history_concatenated
-        
+
     @patch('requests.get')   
     def test_get_attrs_should_return_attrs_list(self,mock_get):
         mock_get.return_value.text = """{ 
@@ -97,6 +97,30 @@ class TestDeviceHistory:
         mock_data =  [
             {
                 "attr": "attr1",
+                "value": "{'teste.one':'returnOne'}",
+                "device_id": "teste",
+                "ts": datetime.datetime.now(),
+                "metadata": {}
+            },
+            {
+                "attr": "attr1",
+                "value": "{'teste.one':'returnTwo'}",
+                "device_id": "teste",
+                "ts": datetime.datetime.now(),
+                "metadata": {}
+            }
+        ]
+        collection.find = lambda query, filter, sort, limit : mock_data
+        query = { "query": "", "filter": "", "sort": "", "limit": ""}
+        assert DeviceHistory.get_single_attr(collection, query)  
+    
+
+    def test_get_single_attr_filter_value_inside_value__should_return_a_valid_history(self):
+        collection = MagicMock()
+                
+        mock_data =  [
+            {
+                "attr": "attr1",
                 "value": "teste",
                 "device_id": "teste",
                 "ts": datetime.datetime.now(),
@@ -113,7 +137,6 @@ class TestDeviceHistory:
         collection.find = lambda query, filter, sort, limit : mock_data
         query = { "query": "", "filter": "", "sort": "", "limit": ""}
         assert DeviceHistory.get_single_attr(collection, query)  
-              
     
     @patch('history.api.models.HistoryUtil.get_collection')    
     @patch('history.api.models.DeviceHistory.get_single_attr')

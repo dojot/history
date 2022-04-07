@@ -114,7 +114,7 @@ class DeviceHistory(object):
     """Service used to retrieve a given device historical data"""
 
     @staticmethod
-    def parse_request(request, attr):
+    def parse_request(request, attr,filterField=None, filterValue=None):
         """ returns mongo compatible query object, based on the query params provided """
         logger.debug('DeviceHistory.parse_request [start]')
 
@@ -142,7 +142,13 @@ class DeviceHistory(object):
                 raise falcon.HTTPInvalidParam('Must be integer.', 'hLimit')
 
         if attr:
-            query = {'attr': attr, 'value': {'$ne': ' '}}
+            if filterField:
+                query = {'attr': attr, filterField: {'$eq': filterValue}}
+            else:
+                query = {'attr': attr, 'value': {'$ne': ' '}}
+        else:
+             query = {'attr': attr, 'value': {'$ne': ' '}}
+
 
         ts_filter = {}
         if 'dateFrom' in request.params.keys():
@@ -221,6 +227,16 @@ class DeviceHistory(object):
                 
             else:
                 logger.info('got single attr')
+                if 'attrFilter' in req.params.keys():
+                    logger.info('got attrFilter')
+                    parsed = re.search(
+                        '^(.+){1}=(.+){1}$', req.params['attrFilter'])
+                    history = DeviceHistory.get_single_attr(
+                        collection, DeviceHistory.parse_request(req, req.params['attr'], parsed.group(1), parsed.group(2)))
+                else:
+                    history = DeviceHistory.get_single_attr(
+                        collection, DeviceHistory.parse_request(req, req.params['attr'], None, None))
+
                 history = DeviceHistory.get_single_attr(
                     collection, DeviceHistory.parse_request(req, req.params['attr']))
                 if len(history) == 0:
@@ -235,7 +251,7 @@ class DeviceHistory(object):
             token = req.get_header('authorization')
             attrs_list = DeviceHistory.get_attrs(device_id, token)
             for attr in attrs_list:
-                query = DeviceHistory.parse_request(req, attr)
+                query = DeviceHistory.parse_request(req, attr,None,None)
                 history[attr] = DeviceHistory.get_single_attr(collection, query)
             
             resp.body = ResponseUtil.build_response_body(req, history, DeviceHistory.csv_response_parser )
